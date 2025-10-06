@@ -70,10 +70,11 @@
 ## 📸 Screenshots
 
 ### 🔐 Login Page
-![Login](screenshots/login.png)
+![Login](screenshots/Login%20Page.png)
 
 ### 📊 Dashboard
-![Dashboard](screenshots/dashboard.png)
+![Dashboard](screenshots/Dashboard1.png)
+![Dashboard](screenshots/Dashboard2.png)
 
 *More screenshots coming soon!*
 
@@ -419,6 +420,6 @@ If you have any questions or need help, please:
 
 **⭐ Star this repository if you find it helpful!**
 
-Made with ❤️ by Chandan
+Made by Chandan.
 
 </div>
