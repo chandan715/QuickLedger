@@ -2,155 +2,359 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - QuickLedger</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            --danger-gradient: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
+            --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
         body {
-            background-color: #f8f9fa;
-            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
         }
 
         .navbar {
-            border-bottom: 1px solid #444;
+            background: var(--primary-gradient) !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
         .navbar-brand {
-            font-weight: 600;
-            font-size: 1.2rem;
+            font-weight: 700;
+            font-size: 1.5rem;
+            letter-spacing: 0.5px;
         }
 
-        h5, h4 {
-            font-weight: 600;
+        .summary-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.15);
+        }
+
+        .summary-card .card-body {
+            padding: 1.5rem;
+            color: white;
+        }
+
+        .summary-card.income {
+            background: var(--success-gradient);
+        }
+
+        .summary-card.expense {
+            background: var(--danger-gradient);
+        }
+
+        .summary-card.balance {
+            background: var(--info-gradient);
+        }
+
+        .summary-card h6 {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-card h3 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .summary-card i {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 3rem;
+            opacity: 0.2;
         }
 
         .card {
-            border-radius: 10px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            margin-bottom: 1.5rem;
         }
 
         .card-header {
-            font-weight: 500;
-            background-color: #f1f3f5;
-            border-bottom: 1px solid #ddd;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 1rem 1.5rem;
         }
 
-        .table th, .table td {
-            vertical-align: middle;
+        .btn-primary {
+            background: var(--primary-gradient);
+            border: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            padding: 0.6rem 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+
+        .table {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .table thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
         }
 
         .table-hover tbody tr:hover {
-            background-color: #f9fafb;
+            background-color: #f8f9ff;
+            cursor: pointer;
         }
 
-        .btn {
-            border-radius: 6px;
-            font-weight: 500;
-        }
-
-        .btn-sm {
-            padding: 5px 12px;
-        }
-
-        .form-control, select {
-            border-radius: 8px;
-        }
-
-        .filter-btns a {
-            margin-right: 5px;
-        }
-
-        .filter-btns .active {
-            box-shadow: 0 0 6px rgba(0,0,0,0.2) inset;
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 1rem 0;
         }
 
         .section-title {
-            margin: 25px 0 15px;
-            font-weight: 600;
+            font-weight: 700;
             color: #333;
+            margin: 2rem 0 1rem;
             text-align: center;
+            font-size: 1.5rem;
         }
 
-        /* Expanded filter card */
-        .filter-card {
-            max-width: 1000px;
-            margin: 0 auto 25px auto;
+        .badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
         }
 
-        /* Note input styling */
-        .input-group-text {
-            font-weight: 500;
-            color: #555;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .btn-action {
+            margin: 0 2px;
         }
     </style>
 </head>
 <body>
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    <strong>{{ message }}</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
     <!-- Navbar -->
-    <nav class="navbar navbar-dark bg-dark px-3">
-        <a class="navbar-brand" href="#">QuickLedger</a>
-        <div>
-            <span class="text-white me-3">Welcome, {{ email }}</span>
-            <a href="/logout" class="btn btn-outline-light btn-sm">Logout</a>
+    <nav class="navbar navbar-dark px-4">
+        <a class="navbar-brand" href="/dashboard">
+            <i class="fas fa-wallet me-2"></i>QuickLedger
+        </a>
+        <div class="d-flex align-items-center">
+            <a href="/budgets" class="btn btn-outline-light btn-sm me-2">
+                <i class="fas fa-chart-pie me-1"></i>Budgets
+            </a>
+            <a href="/categories" class="btn btn-outline-light btn-sm me-2">
+                <i class="fas fa-tags me-1"></i>Categories
+            </a>
+            <span class="text-white me-3">
+                <i class="fas fa-user-circle me-1"></i>{{ email }}
+            </span>
+            <a href="/logout" class="btn btn-light btn-sm">
+                <i class="fas fa-sign-out-alt me-1"></i>Logout
+            </a>
         </div>
     </nav>
 
-    <div class="container mt-4">
+    <div class="container-fluid px-4 py-4">
         <!-- Summary Cards -->
-        <div class="row mb-4 text-center">
-            <h5 class="mb-3">Overall Summary</h5>
-            <div class="col-md-4">
-                <div class="card border-success">
+        <div class="row mb-4 fade-in">
+            <div class="col-md-4 mb-3">
+                <div class="summary-card income">
                     <div class="card-body">
-                        <h6 class="text-success">Total Income</h6>
-                        <h4>₹ {{ income }}</h4>
+                        <h6><i class="fas fa-arrow-up me-2"></i>Total Income</h6>
+                        <h3>₹ {{ "%.2f"|format(income) }}</h3>
+                        <i class="fas fa-coins"></i>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card border-danger">
+            <div class="col-md-4 mb-3">
+                <div class="summary-card expense">
                     <div class="card-body">
-                        <h6 class="text-danger">Total Expense</h6>
-                        <h4>₹ {{ expense }}</h4>
+                        <h6><i class="fas fa-arrow-down me-2"></i>Total Expense</h6>
+                        <h3>₹ {{ "%.2f"|format(expense) }}</h3>
+                        <i class="fas fa-shopping-cart"></i>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card border-primary">
+            <div class="col-md-4 mb-3">
+                <div class="summary-card balance">
                     <div class="card-body">
-                        <h6 class="text-primary">Balance</h6>
-                        <h4>₹ {{ balance }}</h4>
+                        <h6><i class="fas fa-balance-scale me-2"></i>Balance</h6>
+                        <h3>₹ {{ "%.2f"|format(balance) }}</h3>
+                        <i class="fas fa-piggy-bank"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Financial Insights -->
+        <div class="card fade-in mb-4">
+            <div class="card-header">
+                <i class="fas fa-lightbulb me-2"></i>Financial Insights & Analysis
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <div class="text-center p-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; color: white;">
+                            <i class="fas fa-piggy-bank fa-2x mb-2"></i>
+                            <h6>Savings Rate</h6>
+                            <h3>{{ "%.1f"|format(insights.savings_rate) }}%</h3>
+                            <small>{% if insights.savings_rate > 20 %}Excellent!{% elif insights.savings_rate > 10 %}Good{% else %}Needs Improvement{% endif %}</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="text-center p-3" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); border-radius: 10px; color: white;">
+                            <i class="fas fa-calendar-alt fa-2x mb-2"></i>
+                            <h6>Avg Monthly Income</h6>
+                            <h3>₹{{ "%.0f"|format(insights.avg_monthly_income) }}</h3>
+                            <small>Over {{ insights.total_months }} month(s)</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="text-center p-3" style="background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%); border-radius: 10px; color: white;">
+                            <i class="fas fa-shopping-bag fa-2x mb-2"></i>
+                            <h6>Avg Monthly Expense</h6>
+                            <h3>₹{{ "%.0f"|format(insights.avg_monthly_expense) }}</h3>
+                            <small>{% if insights.is_overspending %}<i class="fas fa-exclamation-triangle"></i> Overspending!{% else %}Under control{% endif %}</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="text-center p-3" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); border-radius: 10px; color: white;">
+                            <i class="fas fa-chart-line fa-2x mb-2"></i>
+                            <h6>Spending Trend</h6>
+                            <h3>
+                                {% if insights.spending_trend == 'increasing' %}
+                                    <i class="fas fa-arrow-up"></i> {{ "%.1f"|format(insights.trend_percentage) }}%
+                                {% elif insights.spending_trend == 'decreasing' %}
+                                    <i class="fas fa-arrow-down"></i> {{ "%.1f"|format(insights.trend_percentage) }}%
+                                {% else %}
+                                    <i class="fas fa-minus"></i> Stable
+                                {% endif %}
+                            </h3>
+                            <small>Last 3 months</small>
+                        </div>
+                    </div>
+                </div>
+                {% if insights.highest_expense_category %}
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Top Spending:</strong> You spent the most on <strong>{{ insights.highest_expense_category }}</strong> 
+                    (₹{{ "%.2f"|format(insights.highest_expense_amount) }}). 
+                    {% if insights.is_overspending %}
+                        Consider setting a budget to control expenses.
+                    {% else %}
+                        Great job managing your finances!
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Expense Breakdown Chart -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card fade-in">
+                    <div class="card-header">
+                        <i class="fas fa-chart-pie me-2"></i>Expense Breakdown by Category
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="expenseChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Add Transaction -->
-        <div class="card shadow-sm mb-4">
-            <div class="card-header">Add Transaction</div>
+        <div class="card fade-in">
+            <div class="card-header">
+                <i class="fas fa-plus-circle me-2"></i>Add Transaction
+            </div>
             <div class="card-body">
                 <form method="POST">
                     <div class="row g-3">
-                        <div class="col-md-3">
-                            <input type="number" step="0.01" name="amount" class="form-control" placeholder="Amount" required>
+                        <div class="col-md-2">
+                            <input type="number" step="0.01" name="amount" class="form-control" 
+                                   placeholder="Amount" required>
                         </div>
                         <div class="col-md-3">
-                            <select name="category" class="form-control" required>
-                                <option value="">-- Select --</option>
-                                <option value="Income">Income</option>
-                                <option value="Expense">Expense</option>
+                            <select name="category" class="form-select" required>
+                                <option value="">-- Select Category --</option>
+                                {% for cat in user_categories %}
+                                    <option value="{{ cat.name }}">{{ cat.name }} ({{ cat.type }})</option>
+                                {% endfor %}
                             </select>
                         </div>
                         <div class="col-md-4">
-                            <div class="input-group">
-                                <span class="input-group-text bg-light">Note</span>
-                                <input type="text" name="note" class="form-control"
-                                    placeholder="e.g. groceries, salary, shopping, bill, etc...">
+                            <input type="text" name="note" class="form-control"
+                                   placeholder="Note (e.g., groceries, salary, shopping)">
+                        </div>
+                        <div class="col-md-1">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="is_recurring" id="recurring">
+                                <label class="form-check-label" for="recurring">
+                                    Recurring
+                                </label>
                             </div>
-                            <small class="form-text text-muted">
-                                Add a short description — helps you remember the purpose of each transaction.
-                            </small>
                         </div>
                         <div class="col-md-2">
-                            <button type="submit" class="btn btn-primary w-100">Add</button>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-plus me-1"></i>Add
+                            </button>
                         </div>
                     </div>
                 </form>
@@ -158,130 +362,165 @@
         </div>
 
         <!-- Filter Transactions -->
-        <div class="card shadow-sm mb-4">
-            <div class="card-header">Filter Transactions</div>
+        <div class="card fade-in">
+            <div class="card-header">
+                <i class="fas fa-filter me-2"></i>Filter Transactions
+            </div>
             <div class="card-body">
                 <form method="GET" action="/dashboard" class="row g-3">
                     <div class="col-md-3">
+                        <label class="form-label">Start Date</label>
                         <input type="date" name="start_date" value="{{ start_date or '' }}" class="form-control">
                     </div>
                     <div class="col-md-3">
+                        <label class="form-label">End Date</label>
                         <input type="date" name="end_date" value="{{ end_date or '' }}" class="form-control">
                     </div>
                     <div class="col-md-4">
+                        <label class="form-label">Search by Note</label>
                         <input type="text" name="note" value="{{ search_note or '' }}" class="form-control" 
-                            placeholder="Search by note (e.g. groceries, salary)">
+                               placeholder="Search by note">
                     </div>
                     <div class="col-md-2 d-flex align-items-end">
-                        <button type="submit" class="btn btn-dark w-100">Apply</button>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search me-1"></i>Apply
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
 
-
-        <!-- Top 5 Expenses -->
-        <h5 class="section-title">Top 5 Expenses</h5>
-        <div class="card shadow-sm mb-4">
-            <div class="card-body p-0">
-                <table class="table table-striped table-hover mb-0">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Rank</th>
-                            <th>Category</th>
-                            <th>Total Spent (₹)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for i in range(categories|length) %}
-                        <tr>
-                            <td>{{ i+1 }}</td>
-                            <td>{{ categories[i] }}</td>
-                            <td>₹ {{ amounts[i] }}</td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="3" class="text-center text-muted">No expense data available</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Monthly Summary -->
-        <h5 class="section-title">Monthly Summary</h5>
-        <div class="card shadow-sm mb-4">
-            <div class="card-body p-0">
-                <table class="table table-striped table-hover mb-0">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Month</th>
-                            <th>Income (₹)</th>
-                            <th>Expense (₹)</th>
-                            <th>Balance (₹)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for row in monthly_data %}
-                        <tr>
-                            <td>{{ row.year }}-{{ "%02d"|format(row.month) }}</td>
-                            <td class="text-success">₹ {{ row.income }}</td>
-                            <td class="text-danger">₹ {{ row.expense }}</td>
-                            <td class="text-primary">₹ {{ row.balance }}</td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="4" class="text-center text-muted">No monthly data available</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
         <!-- All Transactions -->
-        <h5 class="section-title">All Transactions</h5>
-        <div class="card shadow-sm mb-4">
+        <div class="card fade-in">
+            <div class="card-header">
+                <i class="fas fa-list me-2"></i>All Transactions
+            </div>
             <div class="card-body p-0">
-                <table class="table table-striped table-hover mb-0">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Amount</th>
-                            <th>Category</th>
-                            <th>Note</th>
-                            <th>Date</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for txn in transactions %}
-                        <tr>
-                            <td>₹ {{ txn.amount }}</td>
-                            <td>{{ txn.category }}</td>
-                            <td>{{ txn.note }}</td>
-                            <td>{{ txn.timestamp.strftime("%Y-%m-%d %H:%M") }}</td>
-                            <td>
-                                <form method="POST" action="/delete/{{ txn.id }}" style="display:inline;">
-                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                                </form>
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="5" class="text-center text-muted">No transactions yet</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-rupee-sign me-1"></i>Amount</th>
+                                <th><i class="fas fa-tag me-1"></i>Category</th>
+                                <th><i class="fas fa-sticky-note me-1"></i>Note</th>
+                                <th><i class="fas fa-calendar me-1"></i>Date</th>
+                                <th><i class="fas fa-cog me-1"></i>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for txn in transactions %}
+                            <tr>
+                                <td>
+                                    <strong>₹ {{ "%.2f"|format(txn.amount) }}</strong>
+                                    {% if txn.is_recurring %}
+                                        <span class="badge bg-info ms-2">
+                                            <i class="fas fa-sync-alt"></i> Recurring
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge" style="background-color: 
+                                        {% if 'Income' in txn.category or 'Salary' in txn.category or 'Freelance' in txn.category %}#28a745
+                                        {% elif 'Food' in txn.category %}#dc3545
+                                        {% elif 'Transport' in txn.category %}#fd7e14
+                                        {% elif 'Shopping' in txn.category %}#e83e8c
+                                        {% elif 'Bills' in txn.category %}#6610f2
+                                        {% elif 'Entertainment' in txn.category %}#17a2b8
+                                        {% elif 'Healthcare' in txn.category %}#ffc107
+                                        {% else %}#6c757d{% endif %}">
+                                        {{ txn.category }}
+                                    </span>
+                                </td>
+                                <td>{{ txn.note or '-' }}</td>
+                                <td>{{ txn.timestamp.strftime("%Y-%m-%d %H:%M") }}</td>
+                                <td>
+                                    <a href="/edit/{{ txn.id }}" class="btn btn-sm btn-warning btn-action">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form method="POST" action="/delete/{{ txn.id }}" style="display:inline;">
+                                        <button type="submit" class="btn btn-sm btn-danger btn-action" 
+                                                onclick="return confirm('Are you sure you want to delete this transaction?')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">
+                                    <i class="fas fa-inbox fa-3x mb-3"></i>
+                                    <p>No transactions yet. Add your first transaction above!</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
         <!-- Export Buttons -->
         <div class="d-flex justify-content-end mb-4">
-            <a href="/export/csv" class="btn btn-outline-success btn-sm me-2">⬇️ Export CSV</a>
-            <a href="/export/pdf" class="btn btn-outline-primary btn-sm">📄 Export PDF</a>
+            <a href="/export/csv" class="btn btn-success me-2">
+                <i class="fas fa-file-csv me-1"></i>Export CSV
+            </a>
+            <a href="/export/pdf" class="btn btn-danger">
+                <i class="fas fa-file-pdf me-1"></i>Export PDF
+            </a>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Fetch and render expense breakdown chart
+        fetch('/api/expense-breakdown')
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('expenseChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            data: data.data,
+                            backgroundColor: data.colors,
+                            borderWidth: 2,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 15,
+                                    font: {
+                                        size: 12
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.label + ': ₹' + context.parsed.toFixed(2);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+
+        // Auto-dismiss alerts after 5 seconds
+        setTimeout(function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 5000);
+    </script>
 </body>
 </html>
