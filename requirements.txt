@@ -16,3 +16,6 @@ reportlab==4.2.5
 
 # Python utilities
 python-dateutil==2.9.0.post0
+
+# Production server
+gunicorn
