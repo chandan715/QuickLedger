@@ -10,6 +10,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from sqlalchemy import extract, func
+from dotenv import load_dotenv
+load_dotenv()
 from config import config
 import os
 
